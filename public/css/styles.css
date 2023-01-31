@@ -4,7 +4,10 @@ body{
 
 .recap{
   background-color: #dbdbdd;
-  width: 27rem;
+  display: flex;
+  justify-content: center;
+  align-items:center;
+  width: 50%;
   height: 21rem;
   margin: 13rem auto 1rem;
 }

