@@ -17,7 +17,11 @@ app.use(session({
   secret: 'runner',
   resave: false,
   saveUninitialized: true,
-  // cookie: { secure: true }
+  cookie: { secure: true,
+            maxAge: 60 * 60 * 24 * 30 * 2 * 1000,
+            httpOnly: true,
+            sameSite: "strict"
+          }
 }));
 
 mongoose.set('strictQuery', true);
