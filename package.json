@@ -9,6 +9,7 @@
   "author": "me",
   "license": "ISC",
   "dependencies": {
+    "animate.css": "^4.1.1",
     "body-parser": "^1.20.1",
     "connect-mongo": "^4.6.0",
     "connect-mongodb-session": "^3.1.1",
